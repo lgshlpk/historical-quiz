@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111318">
+<title>Исторический квиз — История России</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#111318; --panel:#1a1d24; --panel2:#20242d; --text:#f1f2f5; --muted:#a7adba;
+  --border:rgba(255,255,255,.09); --accent:#91a7ff; --shadow:0 18px 50px rgba(0,0,0,.18);
+  --side-a:rgba(120,86,220,.13); --side-b:rgba(42,180,145,.10);
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f7f7f8; --panel:#fff; --panel2:#f1f2f5; --text:#20232b; --muted:#656b78;
+  --border:rgba(22,28,40,.10); --accent:#465fc2; --shadow:0 18px 50px rgba(35,40,60,.08);
+  --side-a:rgba(224,89,145,.11); --side-b:rgba(236,190,70,.12);
+}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg);scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:
+ radial-gradient(ellipse at 0% 42%,var(--side-a),transparent 34%),
+ radial-gradient(ellipse at 100% 68%,var(--side-b),transparent 34%),var(--bg);
+ color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+ transition:background-color .25s,color .25s;line-height:1.5}
+button{font:inherit}
+.shell{width:min(850px,100%);margin:0 auto;padding:24px 18px 42px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:750;letter-spacing:.02em}
+.brand-mark{width:35px;height:35px;border-radius:11px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--border);font-size:17px}
+.theme-btn,.quiet-btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:12px;padding:10px 13px;cursor:pointer;transition:transform .15s,background .2s}
+.theme-btn:active,.quiet-btn:active,.primary:active,.answer:active{transform:scale(.985)}
+.hero{padding:30px 0 24px}
+.eyebrow{color:var(--accent);text-transform:uppercase;font-size:11px;font-weight:800;letter-spacing:.16em;margin-bottom:10px}
+h1{font-size:clamp(30px,6vw,47px);letter-spacing:-.045em;line-height:1.08;margin:0 0 15px;font-weight:780}
+.hero p{color:var(--muted);font-size:16px;max-width:620px;margin:0}
+.info-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:23px}
+.pill{padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--border);font-size:12px;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:clamp(18px,4vw,30px);box-shadow:var(--shadow)}
+.start-card{margin-top:8px}
+.card h2{margin:0 0 9px;font-size:21px;letter-spacing:-.02em}
+.card p{margin:0;color:var(--muted)}
+.primary{border:0;background:var(--text);color:var(--bg);font-weight:750;border-radius:13px;padding:14px 20px;cursor:pointer;margin-top:24px;width:100%;min-height:50px;transition:transform .15s,opacity .2s}
+.primary:hover{opacity:.9}
+.quiz{display:none;margin-top:8px}
+.quiz-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
+.progress-label{font-size:13px;color:var(--muted);font-weight:650}
+.timer{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:12px;font-variant-numeric:tabular-nums;font-weight:750;min-width:86px;justify-content:center}
+.timer.warning{color:#d85b58;border-color:rgba(216,91,88,.4)}
+.progress-track{height:5px;border-radius:999px;background:var(--panel2);overflow:hidden;margin-bottom:25px}
+.progress-fill{height:100%;width:0;background:var(--accent);transition:width .25s}
+.question{font-size:clamp(22px,4.5vw,29px);line-height:1.24;letter-spacing:-.025em;font-weight:760;margin:0 0 12px}
+.hint{font-size:13px;color:var(--muted);margin-bottom:22px;min-height:20px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.answer{display:flex;align-items:center;gap:12px;text-align:left;min-height:74px;padding:14px;border:1px solid var(--border);border-radius:15px;background:var(--panel2);color:var(--text);cursor:pointer;transition:border-color .15s,transform .15s,opacity .15s;line-height:1.35}
+.answer:hover:not(:disabled){border-color:var(--muted)}
+.answer:disabled{cursor:default}
+.answer-num{width:33px;height:33px;flex:0 0 33px;border-radius:10px;display:grid;place-items:center;color:white;font-weight:850;font-size:13px}
+.n1{background:#d94b4b}.n2{background:#3978d4}.n3{background:#269766}.n4{background:#d4a522;color:#252525}
+.answer.correct{border-color:#269766;background:rgba(38,151,102,.13)}
+.answer.incorrect{border-color:#d94b4b;background:rgba(217,75,75,.12)}
+.answer .answer-text{font-size:14px;font-weight:600}
+.feedback{min-height:23px;margin-top:15px;color:var(--muted);font-size:13px}
+.quiz-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}
+.secondary{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:12px;padding:11px 15px;cursor:pointer}
+.next{margin:0;width:auto;min-width:145px;padding:12px 18px;min-height:45px}
+.results{display:none;margin-top:8px}
+.result-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.grade{font-size:58px;line-height:1;font-weight:820;letter-spacing:-.06em}
+.grade-caption{font-size:12px;color:var(--muted);margin-top:8px}
+.score{font-size:19px;font-weight:750}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:25px 0}
+.stat{padding:15px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)}
+.stat strong{display:block;font-size:23px;letter-spacing:-.03em}
+.stat span{font-size:12px;color:var(--muted)}
+.review{margin-top:24px}
+.review-item{padding:16px 0;border-bottom:1px solid var(--border)}
+.review-item:last-child{border-bottom:0}
+.review-q{font-weight:700;margin-bottom:7px}
+.review-answer{font-size:13px;color:var(--muted)}
+.review-answer .good{color:#269766}.review-answer .bad{color:#d94b4b}
+.note{font-size:12px;color:var(--muted);margin-top:17px}
+@media(max-width:560px){
+ .shell{padding:15px 13px 30px}.topbar{margin-bottom:18px}.hero{padding:22px 0 20px}
+ .answers{grid-template-columns:1fr;gap:9px}.answer{min-height:61px;padding:11px 12px}
+ .answer-num{width:31px;height:31px;flex-basis:31px}
+ .card{border-radius:18px}.quiz-head{margin-bottom:14px}
+ .result-stats{gap:7px}.stat{padding:12px 9px}.stat strong{font-size:20px}
+ .quiz-footer{align-items:stretch}.next{min-width:0;flex:1}.secondary{padding:10px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">⌘</span><span>ИСТОРИЯ РОССИИ</span></div>
+    <button class="theme-btn" id="themeToggle" type="button" aria-label="Переключить тему">☼ Светлая тема</button>
+  </header>
+  <section class="hero">
+    <div class="eyebrow">Исторический квиз</div>
+    <h1>Проверь, что ты знаешь<br>об истории России</h1>
+    <p>25 вопросов — от Древней Руси до распада СССР. Выбирай один из четырёх вариантов и следи за временем.</p>
+    <div class="info-row">
+      <span class="pill">25 вопросов</span><span class="pill">30 секунд на вопрос</span><span class="pill">Оценка по 5-балльной шкале</span>
+    </div>
+  </section>
+
+  <section class="card start-card" id="startScreen">
+    <h2>Готов начать?</h2>
+    <p>За каждый вопрос можно получить один балл. Если время закончится, ответ будет засчитан как пропущенный. В конце появится оценка и разбор ответов.</p>
+    <button class="primary" id="startBtn" type="button">Начать викторину <span aria-hidden="true">→</span></button>
+  </section>
+
+  <main class="card quiz" id="quizScreen" aria-live="polite">
+    <div class="quiz-head">
+      <div class="progress-label" id="questionCounter">Вопрос 1 из 25</div>
+      <div class="timer" id="timer"><span aria-hidden="true">◷</span><span id="timeLeft">30</span> сек.</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <h2 class="question" id="questionText"></h2>
+    <div class="hint" id="hintText"></div>
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <div class="quiz-footer">
+      <button class="secondary" id="quitBtn" type="button">Завершить</button>
+      <button class="primary next" id="nextBtn" type="button" disabled>Следующий вопрос →</button>
+    </div>
+  </main>
+
+  <section class="card results" id="resultsScreen">
+    <div class="result-top">
+      <div><div class="eyebrow">Результат викторины</div><h2 id="resultTitle">Квиз завершён</h2><p id="resultMessage"></p></div>
+      <div><div class="grade" id="gradeNumber">5</div><div class="grade-caption">ОЦЕНКА</div></div>
+    </div>
+    <div class="result-stats">
+      <div class="stat"><strong id="correctCount">0/25</strong><span>Правильных ответов</span></div>
+      <div class="stat"><strong id="answeredCount">0/25</strong><span>Отвечено</span></div>
+      <div class="stat"><strong id="percentCount">0%</strong><span>Точность</span></div>
+    </div>
+    <button class="primary" id="restartBtn" type="button">Пройти ещё раз ↻</button>
+    <div class="review"><h2>Разбор ответов</h2><div id="reviewList"></div></div>
+    <p class="note">Оценка рассчитывается по количеству правильных ответов: 0–14 — «2», 15–19 — «3», 20–24 — «4», 25 — «5».</p>
+  </section>
+</div>
+<script>
+const questions = [
+ {q:"В каком году произошло Крещение Руси?",hint:"Вспомни князя, которого связывают с выбором веры.",a:["862 год","988 год","1019 год","1054 год"],correct:1},
+ {q:"Кого обычно называют первым князем Древней Руси?",hint:"Начало этой истории связано с призванием варягов.",a:["Олега Вещего","Игоря Рюриковича","Рюрика","Владимира Святославича"],correct:2},
+ {q:"Как называлась первая правящая династия в истории России?",hint:"Её представители правили задолго до появления фамилии Романовы.",a:["Романовы","Рюриковичи","Годуновы","Шуйские"],correct:1},
+ {q:"При каком правителе был создан первый известный свод древнерусских законов — «Русская Правда»?",hint:"Этот князь получил прозвище за мудрость.",a:["Ярославе Мудром","Иване III","Владимире Мономахе","Святославе Игоревиче"],correct:0},
+ {q:"В каком году произошло Ледовое побоище?",hint:"Вспомни Александра Невского: Невская битва произошла незадолго до этого сражения.",a:["1223","1242","1268","1380"],correct:1},
+ {q:"В каком году состоялась Куликовская битва?",hint:"Вспомни князя Дмитрия Донского и борьбу с войском Мамая.",a:["1327","1380","1480","1410"],correct:1},
+ {q:"В каком году произошло стояние на реке Угре?",hint:"При Иване III Русь перестала подчиняться Орде; это событие считают важным шагом к освобождению от ордынской зависимости.",a:["1380","1453","1480","1505"],correct:2},
+ {q:"Когда происходило Смутное время в России?",hint:"Вспомни эпоху самозванцев и борьбу за престол.",a:["В конце XV — начале XVI века","В конце XVI — начале XVII века","В середине XVII века","В конце XVII — начале XVIII века"],correct:1},
+ {q:"Как называлась вторая правящая династия России?",hint:"Её правление началось после окончания Смутного времени.",a:["Рюриковичи","Годуновы","Романовы","Лжедмитриевы"],correct:2},
+ {q:"В каком году началась Северная война?",hint:"Эта война началась при Петре I; позже в ней произошла знаменитая Полтавская битва.",a:["1682","1700","1709","1721"],correct:1},
+ {q:"В каком году была провозглашена Российская империя?",hint:"Пётр I провозгласил Россию империей после победы в Северной войне и заключения Ништадтского мира.",a:["1700","1714","1721","1725"],correct:2},
+ {q:"В каком году началась Отечественная война против вторжения Наполеона?",hint:"Вспомни поход армии Наполеона на Москву.",a:["1805","1812","1814","1825"],correct:1},
+ {q:"В конце какого века проходили разделы Речи Посполитой?",hint:"Вспомни Екатерину II и соседние европейские державы.",a:["XVII века","XVIII века","XIX века","XX века"],correct:1},
+ {q:"В каком веке проходила Крымская война?",hint:"В этой войне участвовали Россия, Османская империя, Британия и Франция.",a:["В конце XVIII века","В первой половине XIX века","В середине XIX века","В начале XX века"],correct:2},
+ {q:"В каком году Александр II отменил крепостное право?",hint:"Реформу провёл Александр II, которого называли царём-освободителем.",a:["1855","1861","1874","1881"],correct:1},
+ {q:"В каком году началась Первая мировая война?",hint:"Война началась после кризиса на Балканах и убийства эрцгерцога.",a:["1905","1914","1917","1939"],correct:1},
+ {q:"В каком году произошла Октябрьская революция в России?",hint:"Вспомни события, связанные с большевиками и Лениным.",a:["1905","1914","1917","1922"],correct:2},
+ {q:"В каком году был образован СССР?",hint:"Вспомни договор об объединении советских республик.",a:["1917","1920","1922","1924"],correct:2},
+ {q:"Кто был первым главой советского правительства после Октябрьской революции?",hint:"Его фамилия часто встречается рядом со словом «большевики».",a:["Иосиф Сталин","Владимир Ленин","Михаил Калинин","Лев Троцкий"],correct:1},
+ {q:"В каком году началась Вторая мировая война?",hint:"Вспомни нападение Германии на Польшу.",a:["1938","1939","1941","1945"],correct:1},
+ {q:"В какие годы проходила Великая Отечественная война?",hint:"Она началась с нападения Германии на СССР и завершилась весной 1945 года.",a:["1939–1945","1940–1944","1941–1945","1942–1945"],correct:2},
+ {q:"В каком году произошёл Карибский кризис?",hint:"Вспомни противостояние СССР и США из-за ракет на Кубе.",a:["1956","1962","1968","1979"],correct:1},
+ {q:"Кто стал первым президентом СССР?",hint:"Вопрос с подвохом.",a:["Борис Ельцин","Никита Хрущёв","Михаил Горбачёв","Леонид Брежнев"],correct:2},
+ {q:"Кого обычно называют последним руководителем СССР?",hint:"Он объявил о своей отставке в конце 1991 года.",a:["Михаила Горбачёва","Бориса Ельцина","Константина Черненко","Никиту Хрущёва"],correct:0},
+ {q:"В каком году распался СССР?",hint:"Вспомни беловежские соглашения и появление СНГ.",a:["1989","1990","1991","1993"],correct:2}
+];
+const $ = id => document.getElementById(id);
+let index=0, correctTotal=0, answered=0, selected=null, seconds=30, timerId=null, history=[];
+const startScreen=$("startScreen"), quizScreen=$("quizScreen"), resultsScreen=$("resultsScreen");
+function shuffleOptions(question){
+  const options=question.a.map((text,i)=>({text,correct:i===question.correct}));
+  for(let i=options.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[options[i],options[j]]=[options[j],options[i]];}
+  return options;
+}
+let runQuestions=[];
+function startQuiz(){
+  runQuestions=questions.map(q=>({...q,options:shuffleOptions(q)}));
+  index=0;correctTotal=0;answered=0;history=[];
+  startScreen.style.display="none";resultsScreen.style.display="none";quizScreen.style.display="block";
+  renderQuestion();window.scrollTo({top:0,behavior:"smooth"});
+}
+function renderQuestion(){
+  clearInterval(timerId);selected=null;seconds=30;
+  const q=runQuestions[index];
+  $("questionCounter").textContent=`Вопрос ${index+1} из ${runQuestions.length}`;
+  $("progressFill").style.width=`${index/runQuestions.length*100}%`;
+  $("questionText").textContent=q.q;
+  $("hintText").textContent=q.hint||"Выбери один вариант ответа.";
+  $("feedback").textContent="";
+  $("timeLeft").textContent=seconds;$("timer").classList.remove("warning");
+  $("answers").innerHTML="";
+  q.options.forEach((option,i)=>{
+    const btn=document.createElement("button");btn.type="button";btn.className="answer";
+    const num=document.createElement("span");num.className=`answer-num n${i+1}`;num.textContent=i+1;
+    const text=document.createElement("span");text.className="answer-text";text.textContent=option.text;
+    btn.append(num,text);btn.addEventListener("click",()=>chooseAnswer(i));$("answers").append(btn);
+  });
+  $("nextBtn").disabled=true;$("nextBtn").textContent=index===runQuestions.length-1?"Посмотреть результат →":"Следующий вопрос →";
+  timerId=setInterval(()=>{seconds--; $("timeLeft").textContent=seconds;if(seconds<=7)$("timer").classList.add("warning");if(seconds<=0){clearInterval(timerId);timeUp();}},1000);
+}
+function chooseAnswer(optionIndex){
+  if(selected!==null)return;
+  selected=optionIndex;clearInterval(timerId);
+  const q=runQuestions[index], chosen=q.options[optionIndex], buttons=[...$("answers").querySelectorAll("button")];
+  buttons.forEach((btn,i)=>{btn.disabled=true;if(q.options[i].correct)btn.classList.add("correct");});
+  if(chosen.correct){correctTotal++;$("feedback").textContent="Верно! Хорошее знание истории."; }
+  else{$("feedback").textContent=`Неверно. Правильный ответ: ${q.options.find(o=>o.correct).text}`;buttons[optionIndex].classList.add("incorrect");}
+  answered++;history.push({question:q.q,chosen:chosen.text,correct:q.options.find(o=>o.correct).text,isCorrect:chosen.correct,timeout:false});
+  $("nextBtn").disabled=false;
+}
+function timeUp(){
+  if(selected!==null)return;
+  selected=-1;const q=runQuestions[index],buttons=[...$("answers").querySelectorAll("button")];
+  buttons.forEach((btn,i)=>{btn.disabled=true;if(q.options[i].correct)btn.classList.add("correct");});
+  $("feedback").textContent=`Время вышло. Правильный ответ: ${q.options.find(o=>o.correct).text}`;
+  history.push({question:q.q,chosen:"Время вышло — ответа нет",correct:q.options.find(o=>o.correct).text,isCorrect:false,timeout:true});
+  $("nextBtn").disabled=false;
+}
+function nextQuestion(){if(selected===null)return;if(index<runQuestions.length-1){index++;renderQuestion();}else showResults();}
+function getGrade(score){
+  if(score<15)return {grade:"2",message:"Есть смысл повторить основные даты и события."};
+  if(score<20)return {grade:"3",message:"Неплохая база — некоторые темы стоит освежить."};
+  if(score<25)return {grade:"4",message:"Хороший результат! Ты уверенно ориентируешься в истории."};
+  return {grade:"5",message:"Отличное знание истории России!"};
+}
+function showResults(){
+  clearInterval(timerId);quizScreen.style.display="none";resultsScreen.style.display="block";
+  const grade=getGrade(correctTotal);
+  $("gradeNumber").textContent=grade.grade;$("resultTitle").textContent="Квиз завершён";
+  $("resultMessage").textContent=grade.message;
+  $("correctCount").textContent=`${correctTotal}/${questions.length}`;
+  $("answeredCount").textContent=`${answered}/${questions.length}`;
+  $("percentCount").textContent=`${Math.round(correctTotal/questions.length*100)}%`;
+  $("progressFill").style.width="100%";
+  $("reviewList").innerHTML="";
+  history.forEach((item,i)=>{
+    const div=document.createElement("div");div.className="review-item";
+    const q=document.createElement("div");q.className="review-q";q.textContent=`${i+1}. ${item.question}`;
+    const chosen=document.createElement("div");chosen.className="review-answer";
+    chosen.innerHTML=`Твой ответ: <span class="${item.isCorrect?'good':'bad'}"></span>`;
+    chosen.querySelector("span").textContent=item.chosen;
+    const right=document.createElement("div");right.className="review-answer";right.innerHTML='Правильный ответ: <span class="good"></span>';right.querySelector("span").textContent=item.correct;
+    div.append(q,chosen,right);$("reviewList").append(div);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$("startBtn").addEventListener("click",startQuiz);
+$("nextBtn").addEventListener("click",nextQuestion);
+$("restartBtn").addEventListener("click",startQuiz);
+$("quitBtn").addEventListener("click",()=>{if(confirm("Завершить квиз и посмотреть результаты?"))showResults();});
+$("themeToggle").addEventListener("click",()=>{
+  const root=document.documentElement,light=root.dataset.theme!=="light";
+  root.dataset.theme=light?"light":"dark";
+  $("themeToggle").textContent=light?"☾ Тёмная тема":"☼ Светлая тема";
+  document.querySelector('meta[name="theme-color"]').content=light?"#f7f7f8":"#111318";
+});
+</script>
+</body>
+</html>
